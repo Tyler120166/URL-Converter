@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local URL to Public URL Converter</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Local URL to Public URL Converter</h1>
+        <p>Paste your local file URL below:</p>
+        <input type="text" id="localURL" placeholder="file:///C:/Users/tyler/Desktop/virtual-drum-kit/index.html">
+        <button onclick="convertAndRedirect()">Convert and Redirect</button>
+    </div>
+
+    <script>
+        function convertToLocalURL(localURL) {
+            try {
+                // Create an anchor element to parse the local URL
+                const anchor = document.createElement('a');
+                anchor.href = localURL;
+
+                // Extract the file path from the local URL
+                const filePath = anchor.pathname;
+
+                // Remove leading slash if present
+                const normalizedFilePath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
+
+                // Replace 'username' and 'repository' with your GitHub username and repository name
+                const username = 'username';
+                const repository = 'repository';
+
+                // Construct the GitHub Pages URL
+                const publicURL = `https://${username}.github.io/${repository}/${normalizedFilePath}`;
+                return publicURL;
+            } catch (error) {
+                console.error('Error converting local URL to public URL:', error);
+                return null;
+            }
+        }
+
+        function convertAndRedirect() {
+            const localURL = document.getElementById('localURL').value;
+
+            // Validate if input is empty
+            if (!localURL) {
+                alert("Please enter a valid local file URL.");
+                return;
+            }
+
+            // Convert the local URL to a public URL
+            const publicURL = convertToLocalURL(localURL);
+
+            // Redirect the user to the public URL if conversion successful
+            if (publicURL) {
+                window.location.href = publicURL;
+            } else {
+                alert("Failed to convert the local file URL to a public URL.");
+            }
+        }
+    </script>
+</body>
+</html>
