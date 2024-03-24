@@ -4,61 +4,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Local URL to Public URL Converter</title>
-    <link rel="stylesheet" href="main.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label, .input-group input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .feedback {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .error, .success, .processing {
+            color: #FFA500; /* Orange for processing, dynamically changed based on state */
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>Local URL to Public URL Converter</h1>
-        <p>Paste your local file URL below:</p>
-        <input type="text" id="localURL" placeholder="file:///C:/Users/tyler/Desktop/virtual-drum-kit/index.html">
-        <button onclick="convertAndRedirect()">Convert and Redirect</button>
+        <div class="input-group">
+            <label for="githubUsername">GitHub Username:</label>
+            <input type="text" id="githubUsername" placeholder="tyler12016" required>
+        </div>
+        <div class="input-group">
+            <label for="repositoryName">Repository Name:</label>
+            <input type="text" id="repositoryName" placeholder="Crypto-Tracker" required>
+        </div>
+        <div class="input-group">
+            <label for="localURL">Local File or Server URL:</label>
+            <input type="text" id="localURL" placeholder="http://127.0.0.1:5500/index.html" required>
+        </div>
+        <button id="convertBtn">Convert URL</button>
+        <div id="feedback" class="feedback"></div>
     </div>
 
     <script>
-        function convertToLocalURL(localURL) {
-            try {
-                // Create an anchor element to parse the local URL
-                const anchor = document.createElement('a');
-                anchor.href = localURL;
+        document.getElementById('convertBtn').addEventListener('click', function() {
+            const username = document.getElementById('githubUsername').value.trim().replace(/\s+/g, '-');
+            const repository = document.getElementById('repositoryName').value.trim().replace(/\s+/g, '-');
+            const localURL = document.getElementById('localURL').value.trim();
+            const feedback = document.getElementById('feedback');
 
-                // Extract the file path from the local URL
-                const filePath = anchor.pathname;
+            // Enhanced pattern to include various local server and file URL formats
+            const urlPattern = /^(http:\/\/localhost:5500|http:\/\/127.0.0.1:5500|file:\/\/\/)(.+)$/i;
+            const match = localURL.match(urlPattern);
 
-                // Remove leading slash if present
-                const normalizedFilePath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
+            feedback.className = 'feedback processing';
+            feedback.textContent = 'Processing...';
 
-                // Replace 'username' and 'repository' with your GitHub username and repository name
-                const username = 'username';
-                const repository = 'repository';
-
-                // Construct the GitHub Pages URL
-                const publicURL = `https://${username}.github.io/${repository}/${normalizedFilePath}`;
-                return publicURL;
-            } catch (error) {
-                console.error('Error converting local URL to public URL:', error);
-                return null;
-            }
-        }
-
-        function convertAndRedirect() {
-            const localURL = document.getElementById('localURL').value;
-
-            // Validate if input is empty
-            if (!localURL) {
-                alert("Please enter a valid local file URL.");
+            if (!username || !repository || !match) {
+                feedback.textContent = 'Please ensure all fields are correctly filled and the URL is valid.';
+                feedback.className = 'feedback error';
                 return;
             }
 
-            // Convert the local URL to a public URL
-            const publicURL = convertToLocalURL(localURL);
+            const filePath = match[2].replace(/^\/+/, '');
+            const encodedFilePath = filePath.split('/').map(part => encodeURIComponent(part)).join('/');
+            const publicURL = `https://${username}.github.io/${repository}/${encodedFilePath}`;
 
-            // Redirect the user to the public URL if conversion successful
-            if (publicURL) {
-                window.location.href = publicURL;
-            } else {
-                alert("Failed to convert the local file URL to a public URL.");
-            }
-        }
+            feedback.textContent = `Converted URL: ${publicURL}`;
+            feedback.className = 'feedback success';
+            navigator.clipboard.writeText(publicURL).then(() => {
+                feedback.textContent += ' (Copied to clipboard!)';
+            }, () => {
+                feedback.className = 'feedback error';
+                feedback.textContent = 'Failed to copy to clipboard.';
+            });
+        });
     </script>
 </body>
 </html>
